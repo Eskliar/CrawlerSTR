@@ -164,14 +164,74 @@ bool crawler_listo = false; // Indica si el aprendizaje ha finalizado
 // definición de funciones
 void q_agent_init(Q_Agent *agent);
 int q_agent_select_action(Q_Agent *agent, int servo, int state);
-void q_agent_update(Q_Agent *agent, int servo, int state, int action, int reward, int next_state);
+void q_agent_update(Q_Agent *agent, int servo, int state, int action, int next_state);
 void mover_servos(int servo1_position, int servo2_position);
-int encoder_signal(); // simula la señal del encoder
+void encoder_signal(Q_Agent *, int,  int,  int,  encoder_t *, encoder_t *); // simula la señal del encoder
 void print_q_matrix(Q_Agent *agent); // Nueva función para imprimir la matriz Q
 void mover_servos_continuamente(int servo1_initial_position, int servo2_initial_position); // Nueva función para el movimiento continuo de arrastre
 
 
+// Proceso de aprendizaje
+void tarea_q_learning(void *param){
+    int current_state = 0; // estado inicial
+    int servo1_position = 0;
+    int servo2_position = 0;
+    int cont = 0;
+    
+    while (!crawler_listo && (cont < 100)) {
+        // Seleccionar acción para cada servo
+        int servo1_action = q_agent_select_action(&agent, 0, current_state);
+        int servo2_action = q_agent_select_action(&agent, 1, current_state);
 
+        int servo1_new_position = servo1_position + action_displacements[servo1_action];
+        int servo2_new_position = servo2_position + action_displacements[servo2_action];
+
+        // Restringir posiciones a los límites
+        servo1_new_position = servo1_new_position > MAX_POSITION ? MAX_POSITION :
+                            (servo1_new_position < MIN_POSITION ? MIN_POSITION : servo1_new_position);
+
+        servo2_new_position = servo2_new_position > MAX_POSITION ? MAX_POSITION :
+                            (servo2_new_position < MIN_POSITION ? MIN_POSITION : servo2_new_position);
+
+        // Calcular nuevo estado
+        int next_state = (servo1_new_position / 45) + (servo2_new_position / 45) * 3;
+
+        // Simular recompensas del encoder
+        // int reward1 = encoder_signal();
+        // int reward2 = encoder_signal();
+
+        // Mover los servos
+        // mover_servos(servo1_new_position, servo2_new_position);
+        process_move_shoulder(servo1_new_position);
+        process_move_elbow(servo2_new_position);
+
+        // Actualizar la matriz R con recompensas
+        encoder_signal(&agent, 0, current_state, servo1_action, &encoder1, &encoder2);
+        encoder_signal(&agent, 1, current_state, servo2_action, &encoder1, &encoder2);
+        
+        
+        // Actualizar las matrices Q para ambos servos
+        q_agent_update(&agent, 0, current_state, servo1_action, next_state);
+        q_agent_update(&agent, 1, current_state, servo2_action, next_state);
+
+        // Actualizar estado y posiciones
+        current_state = next_state;
+        servo1_position = servo1_new_position;
+        servo2_position = servo2_new_position;
+
+        // Imprimir matriz Q
+        print_q_matrix(&agent);
+
+        vTaskDelay(pdMS_TO_TICKS(1000)); // espera 1 segundo entre ciclos
+        cont++;
+    }
+
+    // Una vez finalizado el aprendizaje, cambiar a modo de arrastre continuo
+    printf("Proceso de aprendizaje completado.\n");
+    mover_servos_continuamente(servo1_position, servo2_position);
+
+
+}
 
 
 //-----main-------------------------------------------------------------
@@ -230,69 +290,6 @@ void app_main() {
     (void *)&encoders,             // Parámetro de entrada
     1,                             // Prioridad
     NULL);
-    int current_state = 0; // estado inicial
-    int servo1_position = 0;
-    int servo2_position = 0;
-    int cont = 0;
-
-
-        // Proceso de aprendizaje
-    void tarea_q_learning(void *param){
-       
-        while (!crawler_listo && (cont < 100)) {
-            // Seleccionar acción para cada servo
-            int servo1_action = q_agent_select_action(&agent, 0, current_state);
-            int servo2_action = q_agent_select_action(&agent, 1, current_state);
-
-            int servo1_new_position = servo1_position + action_displacements[servo1_action];
-            int servo2_new_position = servo2_position + action_displacements[servo2_action];
-
-            // Restringir posiciones a los límites
-            servo1_new_position = servo1_new_position > MAX_POSITION ? MAX_POSITION :
-                                (servo1_new_position < MIN_POSITION ? MIN_POSITION : servo1_new_position);
-
-            servo2_new_position = servo2_new_position > MAX_POSITION ? MAX_POSITION :
-                                (servo2_new_position < MIN_POSITION ? MIN_POSITION : servo2_new_position);
-
-            // Calcular nuevo estado
-            int next_state = (servo1_new_position / 45) + (servo2_new_position / 45) * 3;
-
-            // Simular recompensas del encoder
-            // int reward1 = encoder_signal();
-            // int reward2 = encoder_signal();
-
-            // Mover los servos
-            // mover_servos(servo1_new_position, servo2_new_position);
-            process_move_shoulder(servo1_new_position);
-            process_move_elbow(servo2_new_position);
-
-            // Actualizar la matriz R con recompensas
-            encoder_signal(&agent, 0, current_state, servo1_action, &encoder1, &encoder2);
-            encoder_signal(&agent, 1, current_state, servo2_action, &encoder1, &encoder2);
-            
-            
-            // Actualizar las matrices Q para ambos servos
-            q_agent_update(&agent, 0, current_state, servo1_action, next_state);
-            q_agent_update(&agent, 1, current_state, servo2_action, next_state);
-
-            // Actualizar estado y posiciones
-            current_state = next_state;
-            servo1_position = servo1_new_position;
-            servo2_position = servo2_new_position;
-
-            // Imprimir matriz Q
-            print_q_matrix(&agent);
-
-            vTaskDelay(pdMS_TO_TICKS(1000)); // espera 1 segundo entre ciclos
-            cont++;
-        }
-
-        // Una vez finalizado el aprendizaje, cambiar a modo de arrastre continuo
-        printf("Proceso de aprendizaje completado.\n");
-        mover_servos_continuamente(servo1_position, servo2_position);
-
-
-    }
 
     // void tarea_encoders(void *param) 
     //     {
