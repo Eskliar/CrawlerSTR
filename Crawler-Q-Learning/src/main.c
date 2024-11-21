@@ -5,8 +5,8 @@
 #include "freertos/task.h"
 #include "esp_system.h"
 
-#include "servo.c"
-#include "encoder.C" 
+#include "servo.h"
+#include "encoder.h" 
 #include "esp_wifi.h"
 #include "esp_event.h"
 #include "nvs_flash.h"
@@ -144,9 +144,7 @@ void enviarDatosMatriz(int matriz[9][9]) {
 // };
 
 // Desplazamiento para cada servo por acción
-const int action_displacements[ACT_NUM] = {
-    { 45, -45,  0 } // Efecto en Servo
-};
+const int action_displacements[ACT_NUM] = { 45, -45,  0 }; // Efecto en Servo;
 
 encoder_t encoder1, encoder2;  // Instancias de los dos encoders
 
@@ -241,10 +239,13 @@ void app_main() {
 
     //SERVOS----------------------------------------------
     init_servo();
-    current_pos[0] = SHOULDER_MID_PULSE;
-    current_pos[1] = ELBOW_MID_PULSE;
-    set_servo_angle(LEDC_SHOULDER_CHANNEL, current_pos[0]);
-    set_servo_angle(LEDC_ELBOW_CHANNEL, current_pos[1]);
+    set_pos(SHOULDER_MID_PULSE,ELBOW_MID_PULSE);
+    set_servo_angle(LEDC_SHOULDER_CHANNEL, SHOULDER_MID_PULSE);
+    set_servo_angle(LEDC_ELBOW_CHANNEL, ELBOW_MID_PULSE);
+    // current_pos[0] = SHOULDER_MID_PULSE;
+    // current_pos[1] = ELBOW_MID_PULSE;
+    // set_servo_angle(LEDC_SHOULDER_CHANNEL, current_pos[0]);
+    // set_servo_angle(LEDC_ELBOW_CHANNEL, current_pos[1]);
 
     //ENCODER + AP----------------------------------------
     uart_set_baudrate(UART_NUM_0, 115200);
@@ -416,7 +417,7 @@ void mover_servos(int servo1_position, int servo2_position) {
 
 void encoder_signal(Q_Agent *agent, int servo, int state, int action, encoder_t *encoder1, encoder_t *encoder2) {
     // Leer el valor de recompensa desde los encoders
-    float reward = get_reward(&encoder1,&encoder2);
+    float reward = get_reward(encoder1,encoder2);
     // Actualizar la matriz R con la recompensa obtenida
     agent->R[servo][state][action] = reward;
     

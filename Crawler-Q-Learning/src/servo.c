@@ -1,7 +1,7 @@
 #include "servo.h"
 
 // Variables globales
-static int current_pos[2] = {0, 0}; // [hombro, codo]
+int current_pos[2] = {0, 0}; // [hombro, codo]
 
 
 // Función para convertir grados a ciclo de trabajo
@@ -24,6 +24,15 @@ uint32_t degree_to_duty(int angle) {
     return (pulse_width * ((1 << LEDC_DUTY_RES) - 1)) / 20000;
 }
 
+
+void set_pos(int shoulder, int elbow){
+    current_pos[0] = shoulder;
+    current_pos[1] = elbow;
+}
+
+// int[] get_pos(){
+//     return current_pos;
+// }
 // Función para establecer el ángulo del servo
 void set_servo_angle(ledc_channel_t channel, int angle) {
     int duty = degree_to_duty(angle);

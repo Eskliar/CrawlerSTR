@@ -1,3 +1,4 @@
+#pragma once
 #ifndef SERVO_H
 #define SERVO_H
 
@@ -7,6 +8,9 @@
 #include "driver/gpio.h"
 #include "driver/ledc.h"
 #include "esp_log.h"    
+
+extern int current_pos[2]; // Declare current_pos for shared access
+void set_pos(int shoulder, int elbow);
 
 // Definir pines para los servos
 #define SHOULDER_PIN    GPIO_NUM_13
@@ -53,5 +57,6 @@ char get_keypad_input(void);
 void set_servo_pulse(int channel, int pulse);
 void process_move_elbow(int angle);
 void process_move_shoulder(int angle);
+void init_servo(void);
 
 #endif // SERVO_H
