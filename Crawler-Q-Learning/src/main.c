@@ -418,10 +418,9 @@ void encoder_signal(Q_Agent *agent, int servo, int state, int action, encoder_t 
     // Leer el valor de recompensa desde los encoders
     float reward = get_reward(&encoder1,&encoder2);
     // Actualizar la matriz R con la recompensa obtenida
-    //preguntar a lucho si va com ampersand
     agent->R[servo][state][action] = reward;
-
-    printf("Actualizada recompensa en R[%d][%d][%d]: %.2f\n", servo, state, action, reward);
+    
+    // printf("Actualizada recompensa en R[%d][%d][%d]: %.2f\n", servo, state, action, reward);
 }
 
 
