@@ -232,6 +232,7 @@ void tarea_q_learning(void *param) {
     // 9. Cuando se termine el aprendizaje, podemos salir del bucle
     crawler_listo = true;  // Señalamos que el aprendizaje ha terminado
     printf("Proceso de aprendizaje completado.\n");
+    mover_servos_continuamente(0,0);
 }
 
 
