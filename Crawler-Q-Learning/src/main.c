@@ -174,7 +174,8 @@ void mover_servos(int servo1_position, int servo2_position);
 void encoder_signal(Q_Agent *, int,  int,  int,  encoder_t *, encoder_t *); // simula la señal del encoder
 void print_q_matrix(Q_Agent *agent); // Nueva función para imprimir la matriz Q
 void mover_servos_continuamente(int servo1_initial_position, int servo2_initial_position); // Nueva función para el movimiento continuo de arrastre
-
+void simu_mover_servos(int next_state);
+void simu_encoder_signal(Q_Agent&agent, int current_state, int action, int next_state);
 
 
 // Proceso de aprendizaje----------------------------------------------------APRENDIZAJE--------------------------------------------------
@@ -203,10 +204,12 @@ void tarea_q_learning(void *param) {
         }
 
         // 3. Mover servos según el estado siguiente (simular el movimiento)
-        mover_servos(next_state);
+        // mover_servos(next_state);
+        simu_mover_servos(next_state);
 
         // 4. Obtener la recompensa (basado en los encoders)
-        encoder_signal(&agent, current_state, action, next_state, &encoder1, &encoder2);
+        // encoder_signal(&agent, current_state, next_state, &encoder1, &encoder2);
+        simu_encoder_signal(&agent, current_state, next_state);
         
         // 5. Actualizar la matriz Q
         q_agent_update(&agent, current_state, action, next_state);
@@ -490,11 +493,22 @@ void mover_servos(int estado, int accion) {
 
 
 
-void encoder_signal(Q_Agent *agent, int servo, int state, int action, encoder_t *encoder1, encoder_t *encoder2) {
+void encoder_signal(Q_Agent *agent, int state, int next_state, encoder_t *encoder1, encoder_t *encoder2) {
     // Leer el valor de recompensa desde los encoders
     float reward = get_reward(encoder1,encoder2);
     // Actualizar la matriz R con la recompensa obtenida
-    agent->R[servo][state][action] = reward;
+    agent->R[state][next_state] = reward;
+    
+    // printf("Actualizada recompensa en R[%d][%d][%d]: %.2f\n", servo, state, action, reward);
+}
+
+void simu_encoder_signal(Q_Agent *agent, int state, int next_state) {
+    //simula un reward random como si leyera el encoder
+    // Actualizar la matriz R con la recompensa obtenida
+    srand(time(NULL)); // Inicializa la semilla
+    // Genera un número aleatorio entre 0 y 1
+    float random = (float)rand() / RAND_MAX;
+    agent->R[state][next_state] = random;
     
     // printf("Actualizada recompensa en R[%d][%d][%d]: %.2f\n", servo, state, action, reward);
 }
