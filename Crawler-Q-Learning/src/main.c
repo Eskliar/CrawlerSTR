@@ -168,14 +168,16 @@ bool crawler_listo = false; // Indica si el aprendizaje ha finalizado
 
 // definición de funciones
 void q_agent_init(Q_Agent *agent);
-int q_agent_select_action(Q_Agent *agent, int servo, int state);
-void q_agent_update(Q_Agent *agent, int servo, int state, int action, int next_state);
-void mover_servos(int servo1_position, int servo2_position);
-void encoder_signal(Q_Agent *, int,  int,  int,  encoder_t *, encoder_t *); // simula la señal del encoder
+int q_agent_select_action(Q_Agent *agent, int state);
+void q_agent_update(Q_Agent *agent, int state, int action, int next_state);
+//void mover_servos(int servo1_position, int servo2_position);
+//void encoder_signal(Q_Agent *, int,  int,  int,  encoder_t *, encoder_t *); // simula la señal del encoder
 void print_q_matrix(Q_Agent *agent); // Nueva función para imprimir la matriz Q
 void mover_servos_continuamente(int servo1_initial_position, int servo2_initial_position); // Nueva función para el movimiento continuo de arrastre
-void simu_mover_servos(int next_state);
-void simu_encoder_signal(Q_Agent&agent, int current_state, int action, int next_state);
+void simu_mover_servos(int next_state, int accion);
+void simu_encoder_signal(Q_Agent *agent, int current_state, int next_state);
+int obtener_siguiente_estado(int current_state, int action);
+bool accion_valida(int current_state, int action);
 
 
 // Proceso de aprendizaje----------------------------------------------------APRENDIZAJE--------------------------------------------------
@@ -205,7 +207,7 @@ void tarea_q_learning(void *param) {
 
         // 3. Mover servos según el estado siguiente (simular el movimiento)
         // mover_servos(next_state);
-        simu_mover_servos(next_state);
+        simu_mover_servos(next_state, action);
 
         // 4. Obtener la recompensa (basado en los encoders)
         // encoder_signal(&agent, current_state, next_state, &encoder1, &encoder2);
@@ -288,7 +290,7 @@ int get_estado(int servo1_pos, int servo2_pos) {
 }
 
 // Función para obtener las acciones válidas basadas en las posiciones de los servos
-int* get_valid_actions(int servo1_pos, int servo2_pos) {
+int* get_valid_actions(int servo1_pos, int servo2_pos, int* size) {
     static int valid_actions[4]; // Array estático para almacenar las acciones válidas
     int action_count = 0;
 
@@ -311,6 +313,8 @@ int* get_valid_actions(int servo1_pos, int servo2_pos) {
     if (servo2_pos - 45 >= MIN_POSITION) {
         valid_actions[action_count++] = ACTION_SERVO2_BACKWARD;
     }
+
+    *size = sizeof(valid_actions)/sizeof(valid_actions[0]);
 
     return valid_actions;  // Devuelve las acciones válidas
 }
@@ -335,10 +339,10 @@ int q_agent_select_action(Q_Agent *agent, int estado) {
     // Obtener las posiciones actuales de los servos
     int servo1_pos = estado / 3 * 45;  // Dividiendo el estado para obtener la posición de servo 1
     int servo2_pos = (estado % 3) * 45;  // Calculando la posición de servo 2
+    int num_valid_actions;
 
     // Obtener las acciones válidas
-    int* valid_actions = get_valid_actions(servo1_pos, servo2_pos);
-    int num_valid_actions = sizeof(valid_actions) / sizeof(valid_actions[0]);
+    int* valid_actions = get_valid_actions(servo1_pos, servo2_pos, &num_valid_actions);
 
     if ((float)rand() / RAND_MAX < agent->epsilon) {
         // Exploración: Seleccionar una acción aleatoria entre las acciones válidas
@@ -419,21 +423,48 @@ void q_agent_update(Q_Agent *agent, int estado, int accion, int siguiente_estado
 }
 
 void print_q_matrix(Q_Agent *agent) {
-    for (int servo = 0; servo < SERVO_NUM; servo++) {
-        printf("Matriz Q para Servo %d:\n", servo + 1);
-        for (int s = 0; s < ROW_NUM; s++) {
-            for (int a = 0; a < ACT_NUM; a++) {
-                printf("%.2f ", agent->Q[servo][s][a]);
-            }
-            printf("\n");
+    for (int r = 0; r < ROW_NUM; r++) {
+        for (int c = 0; c < COL_NUM; c++) {
+            printf("%.2f ", agent->Q[r][c]);
         }
         printf("\n");
     }
 }
 
 // Función para mover los servos según el estado 
+void simu_mover_servos(int estado, int accion)
+{
+    int servo1_pos = estado / 3 * 45;  // Dividiendo el estado para obtener la posición de servo 1
+    int servo2_pos = (estado % 3) * 45;  // Calculando la posición de servo 2
+
+    // Ejecutar la acción correspondiente
+    switch (accion) {
+        case ACTION_SERVO1_FORWARD:
+            servo1_pos += 45; // Mover servo 1 hacia arriba
+            break;
+        case ACTION_SERVO1_BACKWARD:
+            servo1_pos -= 45; // Mover servo 1 hacia abajo
+            break;
+        case ACTION_SERVO2_FORWARD:
+            servo2_pos += 45; // Mover servo 2 hacia arriba
+            break;
+        case ACTION_SERVO2_BACKWARD:
+            servo2_pos -= 45; // Mover servo 2 hacia abajo
+            break;
+    }
+
+    // Limitar las posiciones de los servos a entre 0 y 90 grados
+    //ya está implmentado en el get_valid_actions, pero le da una capa de prevencion
+    if (servo1_pos > 90) servo1_pos = 90;
+    if (servo1_pos < 0) servo1_pos = 0;
+    if (servo2_pos > 90) servo2_pos = 90;
+    if (servo2_pos < 0) servo2_pos = 0;
+
+    // Imprimir las nuevas posiciones de los servos
+    printf("Moviendo servo 1 a %d grados, servo 2 a %d grados\n", servo1_pos, servo2_pos);
+}
 //el estado debería llegar bien
-void mover_servos(int estado) {
+/*void mover_servos(int estado) {
     int servo1_pos = 0;
     int servo2_pos = 0;
     switch (estado) {
@@ -453,10 +484,10 @@ void mover_servos(int estado) {
     // Aquí deberías poner el código que mueve físicamente los servos
     // usando los ángulos decodificados (servo1_pos, servo2_pos)
     printf("Moviendo servo 1 a %d y servo 2 a %d\n", servo1_pos, servo2_pos);
-}
+}*/
 
 // Función para mover los servos según la acción
-void mover_servos(int estado, int accion) {
+/*void mover_servos(int estado, int accion) {
     int servo1_pos = estado / 3 * 45;  // Dividiendo el estado para obtener la posición de servo 1
     int servo2_pos = (estado % 3) * 45;  // Calculando la posición de servo 2
 
@@ -489,18 +520,18 @@ void mover_servos(int estado, int accion) {
 
     // Imprimir las nuevas posiciones de los servos
     printf("Moviendo servo 1 a %d grados, servo 2 a %d grados\n", servo1_pos, servo2_pos);
-}
+}*/
 
 
 
-void encoder_signal(Q_Agent *agent, int state, int next_state, encoder_t *encoder1, encoder_t *encoder2) {
+/*void encoder_signal(Q_Agent *agent, int state, int next_state, encoder_t *encoder1, encoder_t *encoder2) {
     // Leer el valor de recompensa desde los encoders
     float reward = get_reward(encoder1,encoder2);
     // Actualizar la matriz R con la recompensa obtenida
     agent->R[state][next_state] = reward;
     
     // printf("Actualizada recompensa en R[%d][%d][%d]: %.2f\n", servo, state, action, reward);
-}
+}*/
 
 void simu_encoder_signal(Q_Agent *agent, int state, int next_state) {
     //simula un reward random como si leyera el encoder
