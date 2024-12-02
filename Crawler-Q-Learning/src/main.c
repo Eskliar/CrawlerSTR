@@ -466,8 +466,8 @@ void simu_mover_servos(int estado, int accion)
     // if (servo1_pos < 0) servo1_pos = 0;
     // if (servo2_pos > 90) servo2_pos = 90;
     // if (servo2_pos < 0) servo2_pos = 0;
-    process_move_shoulder(servo1_pos);
-    process_move_elbow(servo2_pos);
+    // process_move_shoulder(servo1_pos);
+    // process_move_elbow(servo2_pos);
 
     // Imprimir las nuevas posiciones de los servos
     printf("Moviendo servo 1 a %d grados, servo 2 a %d grados\n", servo1_pos, servo2_pos);
