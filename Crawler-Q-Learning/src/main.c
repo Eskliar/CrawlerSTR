@@ -112,7 +112,7 @@ void http_post(const char *url, const char *post_data) {
 
 //envia datos de la matriz al servidor-----------------
 
-void enviarDatosMatriz(int matriz[9][9]) {
+void enviarDatosMatriz(float matriz[9][9]) {
     char buffer[1024]; // Buffer para el string JSON
     int offset = 0;    // Offset para ir escribiendo en el buffer
 
@@ -121,7 +121,7 @@ void enviarDatosMatriz(int matriz[9][9]) {
     for (int i = 0; i < 9; i++) {
         offset += snprintf(buffer + offset, sizeof(buffer) - offset, "[");
         for (int j = 0; j < 9; j++) {
-            offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%d", matriz[i][j]);
+            offset += snprintf(buffer + offset, sizeof(buffer) - offset, "%.2f", matriz[i][j]);
             if (j < 8) {
                 offset += snprintf(buffer + offset, sizeof(buffer) - offset, ",");
             }
@@ -222,6 +222,11 @@ void tarea_q_learning(void *param) {
         // 7. Mostrar la matriz Q para depuración (opcional)
         print_q_matrix(&agent);
 
+        if(cont*10%100 == 0)
+        {
+            enviarDatosMatriz(agent.Q);
+        }
+
         // Incrementar el contador de iteraciones
         cont++;
 
@@ -231,6 +236,7 @@ void tarea_q_learning(void *param) {
 
     // 9. Cuando se termine el aprendizaje, podemos salir del bucle
     crawler_listo = true;  // Señalamos que el aprendizaje ha terminado
+    enviarDatosMatriz(agent.Q);
     printf("Proceso de aprendizaje completado.\n");
     mover_servos_continuamente(0,0);
 }
@@ -243,26 +249,26 @@ void app_main() {
 
 
     //SERVOS----------------------------------------------
-    // init_servo();
-    // set_pos(SHOULDER_MID_PULSE,ELBOW_MID_PULSE);
-    // set_servo_angle(LEDC_SHOULDER_CHANNEL, SHOULDER_MID_PULSE);
-    // set_servo_angle(LEDC_ELBOW_CHANNEL, ELBOW_MID_PULSE);
+     init_servo();
+     set_pos(SHOULDER_MID_PULSE,ELBOW_MID_PULSE);
+     set_servo_angle(LEDC_SHOULDER_CHANNEL, SHOULDER_MID_PULSE);
+     set_servo_angle(LEDC_ELBOW_CHANNEL, ELBOW_MID_PULSE);
 
     // //ENCODER + AP----------------------------------------
-    // uart_set_baudrate(UART_NUM_0, 115200);
-    // nvs_flash_init();  // Inicializa NVS
-    // wifi_init_softap();  // Inicia AP
+     uart_set_baudrate(UART_NUM_0, 115200);
+     nvs_flash_init();  // Inicializa NVS
+     wifi_init_softap();  // Inicia AP
 
-    // esp_task_wdt_deinit();  // Desactiva el watchdog para las tareas TESTEANDO
+     esp_task_wdt_deinit();  // Desactiva el watchdog para las tareas TESTEANDO
 
 
     // // Inicializar los encoders
-    // encoder_init(&encoder1, ENCODER1_OUT);
-    // encoder_init(&encoder2, ENCODER2_OUT);
-    // encoders_params_t encoders = {
-    //     .encoder1 = &encoder1,
-    //     .encoder2 = &encoder2,
-    // };
+     encoder_init(&encoder1, ENCODER1_OUT);
+     encoder_init(&encoder2, ENCODER2_OUT);
+     encoders_params_t encoders = {
+         .encoder1 = &encoder1,
+         .encoder2 = &encoder2,
+     };
 
 
     //Q-learning---------------------------------------
@@ -460,6 +466,8 @@ void simu_mover_servos(int estado, int accion)
     // if (servo1_pos < 0) servo1_pos = 0;
     // if (servo2_pos > 90) servo2_pos = 90;
     // if (servo2_pos < 0) servo2_pos = 0;
+    process_move_shoulder(servo1_pos);
+    process_move_elbow(servo2_pos);
 
     // Imprimir las nuevas posiciones de los servos
     printf("Moviendo servo 1 a %d grados, servo 2 a %d grados\n", servo1_pos, servo2_pos);
