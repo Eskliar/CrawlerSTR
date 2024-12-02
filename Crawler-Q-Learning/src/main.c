@@ -486,25 +486,25 @@ void app_main() {
     // Crear tareas en los dos núcleos:
 
     // Tarea para comunicación HTTP y Wi-Fi (Núcleo 0)
-    xTaskCreate(
+    xTaskCreatePinnedToCore(
         tarea_http_wifi,            // Función de la tarea
         "Tarea_HTTP_WiFi",          // Nombre de la tarea
-        2048,                       // Tamaño del stack
+        4096,                       // Tamaño del stack
         NULL,                       // Parámetro de entrada
         2,                          // Prioridad
-        NULL                      // Handle de la tarea
-                                    // Núcleo al que se asigna (Core 0)
+        NULL,                      // Handle de la tarea
+        0                            // Núcleo al que se asigna (Core 0)
     );
 
     // Tarea para el aprendizaje Q-Learning (Núcleo 1)
-    xTaskCreate(
+    xTaskCreatePinnedToCore(
         tarea_q_learning,           // Función de la tarea
         "Tarea_Q_Learning",         // Nombre de la tarea
         4096,                       // Tamaño del stack
         NULL,                       // Parámetro de entrada
         2,                          // Prioridad
-        NULL                       // Handle de la tarea
-                                    // Núcleo al que se asigna (Core 1)
+        NULL,                       // Handle de la tarea
+        1                            // Núcleo al que se asigna (Core 1)
     );
 }
 
