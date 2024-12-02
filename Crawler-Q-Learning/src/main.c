@@ -404,23 +404,23 @@ void tarea_q_learning(void *param) {
 
 // Proceso de aprendizaje----------------------------------------------------HILO WIFI--------------------------------------------------
 
-void tarea_http_wifi(void *param) {
+// void tarea_http_wifi(void *param) {
 
-    // Configuración de Wi-Fi
-    wifi_init_softap();
-    esp_task_wdt_deinit();
-    while (1) {
-        // Aquí podrías hacer solicitudes HTTP o esperar para recibir peticiones
-        // int estado = obtenerEstadoCrawler();
-        // if (estado == 1) {
-        //     // Procesar si se solicita que empiece el aprendizaje
-        //     printf("Inicio de aprendizaje.\n");
-        //     vTaskDelay(pdMS_TO_TICKS(1000));
-        // }
-        enviarDatosMatriz(agent.Q);
-        vTaskDelay(pdMS_TO_TICKS(5000));  // Esperar entre consultas
-    }
-}
+//     // Configuración de Wi-Fi
+//     wifi_init_softap();
+//     esp_task_wdt_deinit();
+//     while (1) {
+//         // Aquí podrías hacer solicitudes HTTP o esperar para recibir peticiones
+//         // int estado = obtenerEstadoCrawler();
+//         // if (estado == 1) {
+//         //     // Procesar si se solicita que empiece el aprendizaje
+//         //     printf("Inicio de aprendizaje.\n");
+//         //     vTaskDelay(pdMS_TO_TICKS(1000));
+//         // }
+//         enviarDatosMatriz(agent.Q);
+//         vTaskDelay(pdMS_TO_TICKS(5000));  // Esperar entre consultas
+//     }
+// }
 
 // ----------------------------------------------------FIN HILO WIFI--------------------------------------------------
 
@@ -490,7 +490,7 @@ void app_main() {
 
     // Tarea para comunicación HTTP y Wi-Fi (Núcleo 0)
     xTaskCreate(
-        tarea_http_wifi,            // Función de la tarea
+        tarea_q_learning,            // Función de la tarea
         "Tarea_HTTP_WiFi",          // Nombre de la tarea
         4096,                       // Tamaño del stack
         NULL,                       // Parámetro de entrada
