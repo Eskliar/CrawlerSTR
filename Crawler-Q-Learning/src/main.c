@@ -50,6 +50,8 @@
 
 encoder_t encoder1, encoder2;  // Instancias de los dos encoders
 
+SemaphoreHandle_t xMutex = NULL;
+
 //agregar a codigo final------------------
 char *response_data = NULL;
 size_t response_data_size = 0;
@@ -330,7 +332,7 @@ int obtener_siguiente_estado(int current_state, int action);
 bool accion_valida(int current_state, int action);
 
 
-// Proceso de aprendizaje----------------------------------------------------APRENDIZAJE--------------------------------------------------
+// Proceso de aprendizaje----------------------------------------------------HILO APRENDIZAJE--------------------------------------------------
 
 void tarea_q_learning(void *param) {
     int current_state = 0;  // Estado inicial
@@ -343,8 +345,12 @@ void tarea_q_learning(void *param) {
 
     // Se asume que se quiere entrenar por un número determinado de iteraciones
     while (cont < max_iterations) {
-        // 1. Seleccionar acción en función de la política epsilon-greedy
-        action = q_agent_select_action(&agent, current_state);
+
+        if (xSemaphoreTake(xMutex, portMAX_DELAY)) {
+            // 1. Seleccionar acción en función de la política epsilon-greedy
+            action = q_agent_select_action(&agent, current_state);
+            xSemaphoreGive(xMutex);
+	    }	
 
         // 2. Ejecutar la acción (mover los servos)
         next_state = obtener_siguiente_estado(current_state, action);  // Determina el siguiente estado
@@ -359,23 +365,26 @@ void tarea_q_learning(void *param) {
         // mover_servos(next_state);
         simu_mover_servos(next_state, action);
 
-        // 4. Obtener la recompensa (basado en los encoders)
-        // encoder_signal(&agent, current_state, next_state, &encoder1, &encoder2);
-        simu_encoder_signal(&agent, current_state, next_state);
-        
-        // 5. Actualizar la matriz Q
-        q_agent_update(&agent, current_state, action, next_state);
+        if (xSemaphoreTake(xMutex, portMAX_DELAY)) {
+            // 4. Obtener la recompensa (basado en los encoders)
+            // encoder_signal(&agent, current_state, next_state, &encoder1, &encoder2);
+            simu_encoder_signal(&agent, current_state, next_state);
+            
+            // 5. Actualizar la matriz Q
+            q_agent_update(&agent, current_state, action, next_state);
+            xSemaphoreGive(xMutex);
+	    }	
 
         // 6. Actualizar el estado actual para el siguiente ciclo
         current_state = next_state;
 
         // 7. Mostrar la matriz Q para depuración (opcional)
-        print_q_matrix(&agent);
+        // print_q_matrix(&agent);
 
-        if(cont*10%100 == 0)
-        {
-            enviarDatosMatriz(agent.Q);
-        }
+        // if(cont*10%100 == 0)
+        // {
+        //     enviarDatosMatriz(agent.Q);
+        // }
 
         // Incrementar el contador de iteraciones
         cont++;
@@ -386,53 +395,146 @@ void tarea_q_learning(void *param) {
 
     // 9. Cuando se termine el aprendizaje, podemos salir del bucle
     crawler_listo = true;  // Señalamos que el aprendizaje ha terminado
-    enviarDatosMatriz(agent.Q);
+    // enviarDatosMatriz(agent.Q);
     printf("Proceso de aprendizaje completado.\n");
     mover_servos_continuamente(0,0);
 }
 
-
-
 //---------------------------------------------------------------------FIN APRENDIZAJE-------------------------------------------------------------
+
+// Proceso de aprendizaje----------------------------------------------------HILO WIFI--------------------------------------------------
+
+void tarea_http_wifi(void *param) {
+    // Configuración de Wi-Fi
+    wifi_init_softap();
+    esp_task_wdt_deinit();
+    
+    while (1) {
+        // Aquí podrías hacer solicitudes HTTP o esperar para recibir peticiones
+        // int estado = obtenerEstadoCrawler();
+        // if (estado == 1) {
+        //     // Procesar si se solicita que empiece el aprendizaje
+        //     printf("Inicio de aprendizaje.\n");
+        //     vTaskDelay(pdMS_TO_TICKS(1000));
+        // }
+        enviarDatosMatriz(agent.Q);
+        vTaskDelay(pdMS_TO_TICKS(5000));  // Esperar entre consultas
+    }
+}
+
+// ----------------------------------------------------FIN HILO WIFI--------------------------------------------------
+
+// void app_main() {
+
+
+//     //SERVOS----------------------------------------------
+//      init_servo();
+//      set_pos(SHOULDER_MID_PULSE,ELBOW_MID_PULSE);
+//      set_servo_angle(LEDC_SHOULDER_CHANNEL, SHOULDER_MID_PULSE);
+//      set_servo_angle(LEDC_ELBOW_CHANNEL, ELBOW_MID_PULSE);
+
+//     // //ENCODER + AP----------------------------------------
+//      uart_set_baudrate(UART_NUM_0, 115200);
+//      nvs_flash_init();  // Inicializa NVS
+//      wifi_init_softap();  // Inicia AP
+
+//      esp_task_wdt_deinit();  // Desactiva el watchdog para las tareas TESTEANDO
+
+
+//     // // Inicializar los encoders
+//      encoder_init(&encoder1, ENCODER1_OUT);
+//      encoder_init(&encoder2, ENCODER2_OUT);
+//      encoders_params_t encoders = {
+//          .encoder1 = &encoder1,
+//          .encoder2 = &encoder2,
+//      };
+
+
+//     //Q-learning---------------------------------------
+
+//     q_agent_init(&agent);
+//     xTaskCreate(tarea_q_learning, "Tarea Q-Learning", 4096, NULL, 2, NULL);
+//     // xTaskCreate(tarea_verificar_variable,      // Función de la tarea
+//     // "VerificarVariableTask",       // Nombre de la tarea
+//     // 2048,                          // Tamaño del stack
+//     // (void *)&encoders,             // Parámetro de entrada
+//     // 1,                             // Prioridad
+//     // NULL);
+
+// }
 
 void app_main() {
 
+    // Inicialización de hardware (Wi-Fi, encoders, etc.)
+    init_servo();
+    set_pos(SHOULDER_MID_PULSE, ELBOW_MID_PULSE);
+    set_servo_angle(LEDC_SHOULDER_CHANNEL, SHOULDER_MID_PULSE);
+    set_servo_angle(LEDC_ELBOW_CHANNEL, ELBOW_MID_PULSE);
 
-    //SERVOS----------------------------------------------
-     init_servo();
-     set_pos(SHOULDER_MID_PULSE,ELBOW_MID_PULSE);
-     set_servo_angle(LEDC_SHOULDER_CHANNEL, SHOULDER_MID_PULSE);
-     set_servo_angle(LEDC_ELBOW_CHANNEL, ELBOW_MID_PULSE);
+    uart_set_baudrate(UART_NUM_0, 115200);
+    nvs_flash_init(); // Inicializa NVS
 
-    // //ENCODER + AP----------------------------------------
-     uart_set_baudrate(UART_NUM_0, 115200);
-     nvs_flash_init();  // Inicializa NVS
-     wifi_init_softap();  // Inicia AP
+    encoder_init(&encoder1, ENCODER1_OUT);
+    encoder_init(&encoder2, ENCODER2_OUT);
+    encoders_params_t encoders = {
+        .encoder1 = &encoder1,
+        .encoder2 = &encoder2,
+    };
 
-     esp_task_wdt_deinit();  // Desactiva el watchdog para las tareas TESTEANDO
+    xMutex = xSemaphoreCreateMutex();
 
+    // Crear tareas en los dos núcleos:
 
-    // // Inicializar los encoders
-     encoder_init(&encoder1, ENCODER1_OUT);
-     encoder_init(&encoder2, ENCODER2_OUT);
-     encoders_params_t encoders = {
-         .encoder1 = &encoder1,
-         .encoder2 = &encoder2,
-     };
+    // Tarea para comunicación HTTP y Wi-Fi (Núcleo 0)
+    xTaskCreatePinnedToCore(
+        tarea_http_wifi,            // Función de la tarea
+        "Tarea_HTTP_WiFi",          // Nombre de la tarea
+        2048,                       // Tamaño del stack
+        NULL,                       // Parámetro de entrada
+        2,                          // Prioridad
+        NULL,                       // Handle de la tarea
+        0                            // Núcleo al que se asigna (Core 0)
+    );
 
-
-    //Q-learning---------------------------------------
-
-    q_agent_init(&agent);
-    xTaskCreate(tarea_q_learning, "Tarea Q-Learning", 4096, NULL, 2, NULL);
-    // xTaskCreate(tarea_verificar_variable,      // Función de la tarea
-    // "VerificarVariableTask",       // Nombre de la tarea
-    // 2048,                          // Tamaño del stack
-    // (void *)&encoders,             // Parámetro de entrada
-    // 1,                             // Prioridad
-    // NULL);
-
+    // Tarea para el aprendizaje Q-Learning (Núcleo 1)
+    xTaskCreatePinnedToCore(
+        tarea_q_learning,           // Función de la tarea
+        "Tarea_Q_Learning",         // Nombre de la tarea
+        4096,                       // Tamaño del stack
+        NULL,                       // Parámetro de entrada
+        2,                          // Prioridad
+        NULL,                       // Handle de la tarea
+        1                            // Núcleo al que se asigna (Core 1)
+    );
 }
+
+// void tarea_q_learning(void *param) {
+//     int current_state = 0;  // Estado inicial
+//     int next_state = 0;
+//     int action = 0;
+//     int cont = 0;
+//     q_agent_init(&agent);
+
+//     while (cont < 100) {
+//         // Seleccionar acción, ejecutar, actualizar y simular movimiento
+//         action = q_agent_select_action(&agent, current_state);
+//         next_state = obtener_siguiente_estado(current_state, action);
+//         simu_mover_servos(next_state, action);
+//         simu_encoder_signal(&agent, current_state, next_state);
+//         q_agent_update(&agent, current_state, action, next_state);
+//         current_state = next_state;
+
+//         // Mostrar y enviar datos de la matriz Q
+//         if (cont % 10 == 0) {
+//             enviarDatosMatriz(agent.Q);
+//         }
+
+//         cont++;
+//         vTaskDelay(pdMS_TO_TICKS(1000));  // Controlar la frecuencia de aprendizaje
+//     }
+//     printf("Proceso de aprendizaje completado.\n");
+// }
+
 
 //----------------------------FUNCIONES--------------------------------------------------
 
