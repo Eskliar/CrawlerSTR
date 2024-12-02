@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matriz</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            margin: 20px auto;
+        }
+        td, th {
+            border: 1px solid #000;
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Matriz Recibida</h1>
+    {% if matriz %}
+        <table>
+            {% for fila in matriz %}
+                <tr>
+                    {% for valor in fila %}
+                        <td>{{ valor }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No se ha recibido ninguna matriz aún.</p>
+    {% endif %}
+</body>
+</html>
