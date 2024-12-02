@@ -382,9 +382,9 @@ void tarea_q_learning(void *param) {
         // 7. Mostrar la matriz Q para depuración (opcional)
         print_q_matrix(&agent);
 
-        if(cont*10%100 == 0)
+        if(cont*20%100 == 0)
         {
-            // enviarDatosMatriz(agent.Q);
+            enviarDatosMatriz(agent.Q);
         }
 
         // Incrementar el contador de iteraciones
@@ -397,7 +397,7 @@ void tarea_q_learning(void *param) {
     // 9. Cuando se termine el aprendizaje, podemos salir del bucle
     crawler_listo = true;  // Señalamos que el aprendizaje ha terminado
     // enviarDatosMatriz(agent.Q);
-    // enviarDatosMatriz(agent.Q);
+    enviarDatosMatriz(agent.Q);
     printf("Proceso de aprendizaje completado.\n");
     mover_servos_continuamente(0,0);
 }
