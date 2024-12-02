@@ -325,6 +325,7 @@ void q_agent_update(Q_Agent *agent, int state, int action, int next_state);
 //void mover_servos(int servo1_position, int servo2_position);
 //void encoder_signal(Q_Agent *, int,  int,  int,  encoder_t *, encoder_t *); // simula la señal del encoder
 void print_q_matrix(Q_Agent *agent); // Nueva función para imprimir la matriz Q
+void print_r_matrix(Q_Agent *agent);
 void mover_servos_continuamente(int servo1_initial_position, int servo2_initial_position); // Nueva función para el movimiento continuo de arrastre
 void simu_mover_servos(int next_state, int accion);
 void simu_encoder_signal(Q_Agent *agent, int current_state, int next_state);
@@ -486,6 +487,7 @@ void app_main() {
 
     xMutex = xSemaphoreCreateMutex();
 
+    srand(time(NULL)); // Inicializa la semilla
     // Crear tareas en los dos núcleos:
 
     // Tarea para comunicación HTTP y Wi-Fi (Núcleo 0)
@@ -682,12 +684,24 @@ void q_agent_update(Q_Agent *agent, int estado, int accion, int siguiente_estado
     float reward = agent->R[estado][siguiente_estado];
     // Actualizar la tabla Q
     agent->Q[estado][siguiente_estado] = old_q + agent->alpha * (reward + agent->gamma * max_q_next - old_q);
+
+    print_r_matrix(agent);
+
 }
 
 void print_q_matrix(Q_Agent *agent) {
     for (int r = 0; r < ROW_NUM; r++) {
         for (int c = 0; c < COL_NUM; c++) {
             printf("%.2f ", agent->Q[r][c]);
+        }
+        printf("\n");
+    }
+}
+
+void print_r_matrix(Q_Agent *agent) {
+    for (int r = 0; r < ROW_NUM; r++) {
+        for (int c = 0; c < COL_NUM; c++) {
+            printf("%.2f ", agent->R[r][c]);
         }
         printf("\n");
     }
@@ -800,12 +814,12 @@ void simu_mover_servos(int estado, int accion)
 void simu_encoder_signal(Q_Agent *agent, int state, int next_state) {
     //simula un reward random como si leyera el encoder
     // Actualizar la matriz R con la recompensa obtenida
-    srand(time(NULL)); // Inicializa la semilla
+    // srand(time(NULL)); // Inicializa la semilla
     // Genera un número aleatorio entre 0 y 1
     float random = (float)rand() / RAND_MAX;
     agent->R[state][next_state] = random;
     
-    // printf("Actualizada recompensa en R[%d][%d][%d]: %.2f\n", servo, state, action, reward);
+    printf("Actualizada recompensa en R[%d][%d]: %.2f\n",state, next_state, random);
 }
 
 
