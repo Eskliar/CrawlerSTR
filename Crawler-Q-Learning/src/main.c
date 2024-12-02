@@ -405,10 +405,10 @@ void tarea_q_learning(void *param) {
 // Proceso de aprendizaje----------------------------------------------------HILO WIFI--------------------------------------------------
 
 void tarea_http_wifi(void *param) {
+
     // Configuración de Wi-Fi
     wifi_init_softap();
     esp_task_wdt_deinit();
-    
     while (1) {
         // Aquí podrías hacer solicitudes HTTP o esperar para recibir peticiones
         // int estado = obtenerEstadoCrawler();
@@ -486,25 +486,25 @@ void app_main() {
     // Crear tareas en los dos núcleos:
 
     // Tarea para comunicación HTTP y Wi-Fi (Núcleo 0)
-    xTaskCreatePinnedToCore(
+    xTaskCreate(
         tarea_http_wifi,            // Función de la tarea
         "Tarea_HTTP_WiFi",          // Nombre de la tarea
         2048,                       // Tamaño del stack
         NULL,                       // Parámetro de entrada
         2,                          // Prioridad
-        NULL,                       // Handle de la tarea
-        0                            // Núcleo al que se asigna (Core 0)
+        NULL                      // Handle de la tarea
+                                    // Núcleo al que se asigna (Core 0)
     );
 
     // Tarea para el aprendizaje Q-Learning (Núcleo 1)
-    xTaskCreatePinnedToCore(
+    xTaskCreate(
         tarea_q_learning,           // Función de la tarea
         "Tarea_Q_Learning",         // Nombre de la tarea
         4096,                       // Tamaño del stack
         NULL,                       // Parámetro de entrada
         2,                          // Prioridad
-        NULL,                       // Handle de la tarea
-        1                            // Núcleo al que se asigna (Core 1)
+        NULL                       // Handle de la tarea
+                                    // Núcleo al que se asigna (Core 1)
     );
 }
 
