@@ -381,10 +381,10 @@ void tarea_q_learning(void *param) {
         // 7. Mostrar la matriz Q para depuración (opcional)
         // print_q_matrix(&agent);
 
-        // if(cont*10%100 == 0)
-        // {
-        //     enviarDatosMatriz(agent.Q);
-        // }
+        if(cont*10%100 == 0)
+        {
+            enviarDatosMatriz(agent.Q);
+        }
 
         // Incrementar el contador de iteraciones
         cont++;
@@ -474,6 +474,9 @@ void app_main() {
     uart_set_baudrate(UART_NUM_0, 115200);
     nvs_flash_init(); // Inicializa NVS
 
+    wifi_init_softap();
+    esp_task_wdt_deinit();
+
     encoder_init(&encoder1, ENCODER1_OUT);
     encoder_init(&encoder2, ENCODER2_OUT);
     encoders_params_t encoders = {
@@ -486,26 +489,26 @@ void app_main() {
     // Crear tareas en los dos núcleos:
 
     // Tarea para comunicación HTTP y Wi-Fi (Núcleo 0)
-    xTaskCreatePinnedToCore(
+    xTaskCreate(
         tarea_http_wifi,            // Función de la tarea
         "Tarea_HTTP_WiFi",          // Nombre de la tarea
         4096,                       // Tamaño del stack
         NULL,                       // Parámetro de entrada
         2,                          // Prioridad
-        NULL,                      // Handle de la tarea
-        0                            // Núcleo al que se asigna (Core 0)
+        NULL                      // Handle de la tarea
+                                    // Núcleo al que se asigna (Core 0)
     );
 
-    // Tarea para el aprendizaje Q-Learning (Núcleo 1)
-    xTaskCreatePinnedToCore(
-        tarea_q_learning,           // Función de la tarea
-        "Tarea_Q_Learning",         // Nombre de la tarea
-        4096,                       // Tamaño del stack
-        NULL,                       // Parámetro de entrada
-        2,                          // Prioridad
-        NULL,                       // Handle de la tarea
-        1                            // Núcleo al que se asigna (Core 1)
-    );
+    // // Tarea para el aprendizaje Q-Learning (Núcleo 1)
+    // xTaskCreatePinnedToCore(
+    //     tarea_q_learning,           // Función de la tarea
+    //     "Tarea_Q_Learning",         // Nombre de la tarea
+    //     4096,                       // Tamaño del stack
+    //     NULL,                       // Parámetro de entrada
+    //     2,                          // Prioridad
+    //     NULL,                       // Handle de la tarea
+    //     1                            // Núcleo al que se asigna (Core 1)
+    // );
 }
 
 // void tarea_q_learning(void *param) {
