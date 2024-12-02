@@ -702,6 +702,7 @@ void print_q_matrix(Q_Agent *agent) {
 }
 
 void print_r_matrix(Q_Agent *agent) {
+    printf("\n");
     for (int r = 0; r < ROW_NUM; r++) {
         for (int c = 0; c < COL_NUM; c++) {
             printf("%.2f ", agent->R[r][c]);
