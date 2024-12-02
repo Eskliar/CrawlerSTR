@@ -5,31 +5,126 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Matriz</title>
     <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(120deg, #1a1a2e, #16213e); /* Fondo degradado azul oscuro */
+            color: white;
+            text-align: center;
+        }
+
+        header {
+            background-color: #6683a7;
+            padding: 20px;
+        }
+
+        header img {
+            width: 200px; /* Ajusta el tamaño del logo */
+        }
+
+        h1 {
+            margin: 20px 0;
+            color: #ffffff;
+        }
+
         table {
             border-collapse: collapse;
             margin: 20px auto;
+            background: #e0e0e0; /* Fondo claro para contraste */
+            color: #000;
         }
+
         td, th {
             border: 1px solid #000;
             padding: 10px;
             text-align: center;
         }
+
+        .buttons {
+            text-align: center;
+            margin: 20px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            margin: 10px;
+            border: none;
+            border-radius: 50px; /* Botones redondeados */
+            color: white;
+            background: #0077b6; /* Azul vibrante */
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background: #023e8a; /* Azul más oscuro al pasar el cursor */
+        }
+
+        button:active {
+            background: #005f73; /* Azul intenso al hacer clic */
+        }
+
+        p {
+            margin: 20px auto;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
-    <h1>Matriz Recibida</h1>
-    {% if matriz %}
-        <table>
-            {% for fila in matriz %}
-                <tr>
-                    {% for valor in fila %}
-                        <td>{{ valor }}</td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-        </table>
-    {% else %}
-        <p>No se ha recibido ninguna matriz aún.</p>
-    {% endif %}
+    <header>
+    {% load static %}
+    <img src="{% static '/crawler.png' %}" alt="CrawlerBot Logo">
+    </header>
+
+    <main>
+        <h1>Estado: <span id="estado-crawler">{{ estado_crawler }}</span></h1>
+        <h1>Matriz Recibida</h1>
+        {% if matriz %}
+            <table>
+                {% for fila in matriz %}
+                    <tr>
+                        {% for valor in fila %}
+                            <td>{{ valor }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p>No se ha recibido ninguna matriz aún.</p>
+        {% endif %}
+
+        <div class="buttons">
+            <form action="/start/" method="post">
+                {% csrf_token %}
+                <button type="submit">Start</button>
+            </form>
+            <form action="/stop/" method="post">
+                {% csrf_token %}
+                <button type="submit">Stop</button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // Función para actualizar el estado
+        async function actualizarEstado() {
+            try {
+                const response = await fetch('/api/get_estado_crawler/');
+                if (response.ok) {
+                    console.log("entre");
+                    const data = await response.json();
+                    document.getElementById('estado-crawler').textContent = data.estado_crawler;
+                } else {
+                    console.error("Error al obtener el estado:", response.statusText);
+                }
+            } catch (error) {
+                console.error("Error de conexión:", error);
+            }
+        }
+
+        // Llama a la función cada segundo
+        setInterval(actualizarEstado, 1000);
+    </script>
 </body>
 </html>
