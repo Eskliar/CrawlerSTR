@@ -374,7 +374,7 @@ void tarea_q_learning(void *param) {
 
         if(cont*10%100 == 0)
         {
-            enviarDatosMatriz(agent.Q);
+            // enviarDatosMatriz(agent.Q);
         }
 
         // Incrementar el contador de iteraciones
@@ -386,7 +386,7 @@ void tarea_q_learning(void *param) {
 
     // 9. Cuando se termine el aprendizaje, podemos salir del bucle
     crawler_listo = true;  // Señalamos que el aprendizaje ha terminado
-    enviarDatosMatriz(agent.Q);
+    // enviarDatosMatriz(agent.Q);
     printf("Proceso de aprendizaje completado.\n");
     mover_servos_continuamente(0,0);
 }
@@ -405,11 +405,11 @@ void app_main() {
      set_servo_angle(LEDC_ELBOW_CHANNEL, ELBOW_MID_PULSE);
 
     // //ENCODER + AP----------------------------------------
-     uart_set_baudrate(UART_NUM_0, 115200);
-     nvs_flash_init();  // Inicializa NVS
-     wifi_init_softap();  // Inicia AP
+    //  uart_set_baudrate(UART_NUM_0, 115200);
+    //  nvs_flash_init();  // Inicializa NVS
+    //  wifi_init_softap();  // Inicia AP
 
-     esp_task_wdt_deinit();  // Desactiva el watchdog para las tareas TESTEANDO
+    //  esp_task_wdt_deinit();  // Desactiva el watchdog para las tareas TESTEANDO
 
 
     // // Inicializar los encoders
