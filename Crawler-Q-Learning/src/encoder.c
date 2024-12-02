@@ -103,6 +103,9 @@ float get_reward(encoder_t *encoder1, encoder_t *encoder2){
     float reward_encoder2=encoder_get_reward(encoder2);
     printf("Recompensa encoder2: %f \n",reward_encoder2);
     float reward_final= (reward_encoder1 + reward_encoder2)/2;
+    if(movement_direction=="DIRECTION_BACKWARD"){
+        reward_final= (-1) * reward_final;
+        }
     printf("Recompensa total: %f \n",reward_final);
     encoder_reset_count(encoder1);
     encoder_reset_count(encoder2);
