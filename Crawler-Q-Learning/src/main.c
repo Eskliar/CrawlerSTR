@@ -189,7 +189,7 @@ void tarea_q_learning(void *param) {
     int cont = 0;
 
     // Número máximo de iteraciones para el aprendizaje
-    int max_iterations = 1000;
+    int max_iterations = 100;
 
     // Se asume que se quiere entrenar por un número determinado de iteraciones
     while (cont < max_iterations) {
@@ -243,38 +243,38 @@ void app_main() {
 
 
     //SERVOS----------------------------------------------
-    init_servo();
-    set_pos(SHOULDER_MID_PULSE,ELBOW_MID_PULSE);
-    set_servo_angle(LEDC_SHOULDER_CHANNEL, SHOULDER_MID_PULSE);
-    set_servo_angle(LEDC_ELBOW_CHANNEL, ELBOW_MID_PULSE);
+    // init_servo();
+    // set_pos(SHOULDER_MID_PULSE,ELBOW_MID_PULSE);
+    // set_servo_angle(LEDC_SHOULDER_CHANNEL, SHOULDER_MID_PULSE);
+    // set_servo_angle(LEDC_ELBOW_CHANNEL, ELBOW_MID_PULSE);
 
-    //ENCODER + AP----------------------------------------
-    uart_set_baudrate(UART_NUM_0, 115200);
-    nvs_flash_init();  // Inicializa NVS
-    wifi_init_softap();  // Inicia AP
+    // //ENCODER + AP----------------------------------------
+    // uart_set_baudrate(UART_NUM_0, 115200);
+    // nvs_flash_init();  // Inicializa NVS
+    // wifi_init_softap();  // Inicia AP
 
-    esp_task_wdt_deinit();  // Desactiva el watchdog para las tareas TESTEANDO
+    // esp_task_wdt_deinit();  // Desactiva el watchdog para las tareas TESTEANDO
 
 
-    // Inicializar los encoders
-    encoder_init(&encoder1, ENCODER1_OUT);
-    encoder_init(&encoder2, ENCODER2_OUT);
-    encoders_params_t encoders = {
-        .encoder1 = &encoder1,
-        .encoder2 = &encoder2,
-    };
+    // // Inicializar los encoders
+    // encoder_init(&encoder1, ENCODER1_OUT);
+    // encoder_init(&encoder2, ENCODER2_OUT);
+    // encoders_params_t encoders = {
+    //     .encoder1 = &encoder1,
+    //     .encoder2 = &encoder2,
+    // };
 
 
     //Q-learning---------------------------------------
 
     q_agent_init(&agent);
     xTaskCreate(tarea_q_learning, "Tarea Q-Learning", 4096, NULL, 2, NULL);
-    xTaskCreate(tarea_verificar_variable,      // Función de la tarea
-    "VerificarVariableTask",       // Nombre de la tarea
-    2048,                          // Tamaño del stack
-    (void *)&encoders,             // Parámetro de entrada
-    1,                             // Prioridad
-    NULL);
+    // xTaskCreate(tarea_verificar_variable,      // Función de la tarea
+    // "VerificarVariableTask",       // Nombre de la tarea
+    // 2048,                          // Tamaño del stack
+    // (void *)&encoders,             // Parámetro de entrada
+    // 1,                             // Prioridad
+    // NULL);
 
 }
 
@@ -438,28 +438,28 @@ void simu_mover_servos(int estado, int accion)
     int servo1_pos = estado / 3 * 45;  // Dividiendo el estado para obtener la posición de servo 1
     int servo2_pos = (estado % 3) * 45;  // Calculando la posición de servo 2
 
-    // Ejecutar la acción correspondiente
-    switch (accion) {
-        case ACTION_SERVO1_FORWARD:
-            servo1_pos += 45; // Mover servo 1 hacia arriba
-            break;
-        case ACTION_SERVO1_BACKWARD:
-            servo1_pos -= 45; // Mover servo 1 hacia abajo
-            break;
-        case ACTION_SERVO2_FORWARD:
-            servo2_pos += 45; // Mover servo 2 hacia arriba
-            break;
-        case ACTION_SERVO2_BACKWARD:
-            servo2_pos -= 45; // Mover servo 2 hacia abajo
-            break;
-    }
+    // // Ejecutar la acción correspondiente
+    // switch (accion) {
+    //     case ACTION_SERVO1_FORWARD:
+    //         servo1_pos += 45; // Mover servo 1 hacia arriba
+    //         break;
+    //     case ACTION_SERVO1_BACKWARD:
+    //         servo1_pos -= 45; // Mover servo 1 hacia abajo
+    //         break;
+    //     case ACTION_SERVO2_FORWARD:
+    //         servo2_pos += 45; // Mover servo 2 hacia arriba
+    //         break;
+    //     case ACTION_SERVO2_BACKWARD:
+    //         servo2_pos -= 45; // Mover servo 2 hacia abajo
+    //         break;
+    // }
 
-    // Limitar las posiciones de los servos a entre 0 y 90 grados
-    //ya está implmentado en el get_valid_actions, pero le da una capa de prevencion
-    if (servo1_pos > 90) servo1_pos = 90;
-    if (servo1_pos < 0) servo1_pos = 0;
-    if (servo2_pos > 90) servo2_pos = 90;
-    if (servo2_pos < 0) servo2_pos = 0;
+    // // Limitar las posiciones de los servos a entre 0 y 90 grados
+    // //ya está implmentado en el get_valid_actions, pero le da una capa de prevencion
+    // if (servo1_pos > 90) servo1_pos = 90;
+    // if (servo1_pos < 0) servo1_pos = 0;
+    // if (servo2_pos > 90) servo2_pos = 90;
+    // if (servo2_pos < 0) servo2_pos = 0;
 
     // Imprimir las nuevas posiciones de los servos
     printf("Moviendo servo 1 a %d grados, servo 2 a %d grados\n", servo1_pos, servo2_pos);
@@ -546,10 +546,82 @@ void simu_encoder_signal(Q_Agent *agent, int state, int next_state) {
 }
 
 
+// void mover_servos_continuamente(int servo1_initial_position, int servo2_initial_position) {
+//     //aca iria el boton de start stop-----
+//     while (1) {
+//         printf("Movimiento continuo: Servo 1 a %d, Servo 2 a %d\n", servo1_initial_position, servo2_initial_position);
+//         printf("Servo 1 a %d, Servo 2 a %d\n", servo1_initial_position, servo2_initial_position);
+//         vTaskDelay(pdMS_TO_TICKS(1000));
+//     }
+// }
+
 void mover_servos_continuamente(int servo1_initial_position, int servo2_initial_position) {
-    //aca iria el boton de start stop-----
+    // Encontrar el estado con el mayor valor en la matriz Q
+    int best_state = 0;
+    float max_q_value = -1e6; // Inicializar con un valor muy bajo para encontrar el máximo
+
+    for (int r = 0; r < ROW_NUM; r++) {
+        for (int c = 0; c < COL_NUM; c++) {
+            if (agent.Q[r][c] > max_q_value) {
+                max_q_value = agent.Q[r][c];
+                best_state = c; // Guardar la columna (estado destino) con el mayor valor
+            }
+        }
+    }
+
+    // Decodificar las posiciones del mejor estado
+    int servo1_best_position = (best_state / 3) * 45; // Fila del estado mejor
+    int servo2_best_position = (best_state % 3) * 45; // Columna del estado mejor
+
+    printf("Mejor estado encontrado: %d con Q-value: %.2f\n", best_state, max_q_value);
+    printf("Moviendo continuamente entre posición inicial Servo 1: %d, Servo 2: %d y mejor posición Servo 1: %d, Servo 2: %d\n",
+           servo1_initial_position, servo2_initial_position,
+           servo1_best_position, servo2_best_position);
+
     while (1) {
-        printf("Movimiento continuo: Servo 1 a %d, Servo 2 a %d\n", servo1_initial_position, servo2_initial_position);
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        // Movimiento de inicial a mejor posición
+        printf("Moviendo hacia la mejor posición...\n");
+        while (servo1_initial_position != servo1_best_position || servo2_initial_position != servo2_best_position) {
+            if (servo1_initial_position < servo1_best_position) {
+                servo1_initial_position += 45; // Incrementar hacia la mejor posición
+            } else if (servo1_initial_position > servo1_best_position) {
+                servo1_initial_position -= 45; // Decrementar hacia la mejor posición
+            }
+
+            if (servo2_initial_position < servo2_best_position) {
+                servo2_initial_position += 45; // Incrementar hacia la mejor posición
+            } else if (servo2_initial_position > servo2_best_position) {
+                servo2_initial_position -= 45; // Decrementar hacia la mejor posición
+            }
+
+            // Imprimir el estado actual del movimiento
+            printf("Moviendo Servo 1 a %d, Servo 2 a %d\n", servo1_initial_position, servo2_initial_position);
+
+            // Simular tiempo de movimiento
+            vTaskDelay(pdMS_TO_TICKS(1000));
+        }
+
+        // Movimiento de regreso a la posición inicial
+        printf("Moviendo de regreso a la posición inicial...\n");
+        while (servo1_initial_position != 0 || servo2_initial_position != 0) {
+            if (servo1_initial_position > 0) {
+                servo1_initial_position -= 45; // Decrementar hacia la posición inicial
+            } else if (servo1_initial_position < 0) {
+                servo1_initial_position += 45; // Incrementar hacia la posición inicial
+            }
+
+            if (servo2_initial_position > 0) {
+                servo2_initial_position -= 45; // Decrementar hacia la posición inicial
+            } else if (servo2_initial_position < 0) {
+                servo2_initial_position += 45; // Incrementar hacia la posición inicial
+            }
+
+            // Imprimir el estado actual del movimiento
+            printf("Moviendo Servo 1 a %d, Servo 2 a %d\n", servo1_initial_position, servo2_initial_position);
+
+            // Simular tiempo de movimiento
+            vTaskDelay(pdMS_TO_TICKS(1000));
+        }
     }
 }
+
