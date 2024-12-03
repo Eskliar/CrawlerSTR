@@ -11,7 +11,7 @@ from django.core.cache import cache
 # Variable global para el estado
 start = False  # Inicialmente apagado
 aprendiendoEjecutando=0 #-1-Detenido, 0-Aprendiendo, 1-Ejecutando
-textoEstadoCrawler="Detenido" #Detenido, Aprendiendo, Ejecutando lo aprendido
+textoEstadoCrawler="Detenid" #Detenido, Aprendiendo, Ejecutando lo aprendido
 
 
 matriz = [[0 for _ in range(9)] for _ in range(9)]  # Matriz 9x9 llena de ceros
