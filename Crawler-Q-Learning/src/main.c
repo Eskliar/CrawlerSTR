@@ -344,6 +344,8 @@ void tarea_q_learning(void *param) {
     // Número máximo de iteraciones para el aprendizaje
     int max_iterations = 50;
 
+    // float inicio = dwalltime();
+
     // Se asume que se quiere entrenar por un número determinado de iteraciones
     while (cont < max_iterations) {
 
@@ -404,7 +406,17 @@ void tarea_q_learning(void *param) {
     // enviarDatosMatriz(agent.Q);
     enviarDatosMatriz(agent.Q);
     printf("Proceso de aprendizaje completado.\n");
-    mover_servos_continuamente(0,0);
+
+    //---calculo del tiempo-----------
+    // float fin = dwalltime();
+    // float tiempo_total = fin - inicio;
+    // float tiempo_de_delay = 2 * cont; // Cada delay es de 2 segundos
+    // float tiempo_ejecucion_real = tiempo_total - tiempo_de_delay;
+    // printf("Tiempo total del bucle: %.2f segundos\n", tiempo_total);
+    // printf("Tiempo de ejecución sin delay: %.2f segundos\n", tiempo_ejecucion_real);
+    //-------------------------------
+
+    mover_servos_continuamente(45,45);
 }
 
 //---------------------------------------------------------------------FIN APRENDIZAJE-------------------------------------------------------------
@@ -990,4 +1002,13 @@ void mover_servos_continuamente(int servo1_initial_position, int servo2_initial_
         vTaskDelay(pdMS_TO_TICKS(2000));
     }
 }
+
+// float dwalltime()
+// {
+//     double sec;
+//     struct timeval tv;
+//     gettimeofday(&tv, NULL);
+//     sec = tv.tv_sec + tv.tv_usec/1000000.0;
+//     return sec;
+// }
 
