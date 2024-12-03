@@ -82,6 +82,8 @@
         <h1>Matriz Recibida</h1>
         {% if matriz %}
             <table>
+         <!-- La tabla se llenará dinámicamente -->
+
                 {% for fila in matriz %}
                     <tr>
                         {% for valor in fila %}
@@ -125,6 +127,55 @@
 
         // Llama a la función cada segundo
         setInterval(actualizarEstado, 1000);
+
+        
+        // Función para actualizar la matriz
+        async function actualizarMatriz() {
+            try {
+                const response = await fetch('/api/get_matriz/');
+                if (response.ok) {
+                    const data = await response.json();
+                    const matriz = data.matriz;
+
+                    // Actualizar la tabla
+                    const tabla = document.querySelector('table');
+                    if (tabla) {
+                        // Eliminar filas existentes
+                        while (tabla.rows.length > 0) {
+                            tabla.deleteRow(0);
+                        }
+
+                        if(matriz==[]){
+                            for(i=0;i<9;i++){
+                                for(j=0;j<9;j++){
+                                    matriz[i][j]=0;
+                                }
+                            }
+                        }
+
+                        // Crear nuevas filas
+                        matriz.forEach(fila => {
+                            const tr = document.createElement('tr');
+                            fila.forEach(valor => {
+                                const td = document.createElement('td');
+                                td.textContent = valor;
+                                tr.appendChild(td);
+                            });
+                            tabla.appendChild(tr);
+                        });
+                    }
+                } else {
+                    console.error("Error al obtener la matriz:", response.statusText);
+                }
+            } catch (error) {
+                console.error("Error de conexión:", error);
+            }
+        }
+
+        // Llama a la función cada 5 segundos
+        setInterval(actualizarMatriz, 5000);
+
+
     </script>
 </body>
 </html>

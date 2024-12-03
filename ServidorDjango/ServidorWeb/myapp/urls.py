@@ -10,5 +10,7 @@ urlpatterns=[
     path('get_start_state/', views.get_start_state, name='get_start_state'),
     path('api/recibir_estado/',views.recibir_estado, name='recibir_estado'),
     path('api/get_estado_crawler/',views.get_estado_crawler, name='get_estado_crawler'),
+    path('api/get_matriz/',views.get_matriz,name="get_matriz")
+
 ]
     
