@@ -955,13 +955,13 @@ void mover_servos_continuamente(int servo1_initial_position, int servo2_initial_
             vTaskDelay(pdMS_TO_TICKS(1000));
         }
 
-        if (servo2_initial_position > 45) {
+        if (servo2_initial_position > 0) {
             servo2_initial_position -= 45; // Decrementar hacia la posición inicial
             process_move_elbow(servo2_initial_position);
             vTaskDelay(pdMS_TO_TICKS(1000));
         } 
-        else if (servo2_initial_position > 0) {
-            servo2_initial_position -= 45; // Incrementar hacia la posición inicial
+        else if (servo2_initial_position < 0) {
+            servo2_initial_position += 45; // Incrementar hacia la posición inicial
             process_move_elbow(servo2_initial_position);
             vTaskDelay(pdMS_TO_TICKS(1000));
         }
@@ -1017,13 +1017,13 @@ void mover_servos_continuamente(int servo1_initial_position, int servo2_initial_
                 vTaskDelay(pdMS_TO_TICKS(1000));
             }
 
-            if (servo2_initial_position > 45) {
+            if (servo2_initial_position > 0) {
                 servo2_initial_position -= 45; // Decrementar hacia la posición inicial
                 process_move_elbow(servo2_initial_position);
                 vTaskDelay(pdMS_TO_TICKS(1000));
             } 
-            else if (servo2_initial_position > 0) {
-                servo2_initial_position -= 45; // Incrementar hacia la posición inicial
+            else if (servo2_initial_position < 0) {
+                servo2_initial_position += 45; // Incrementar hacia la posición inicial
                 process_move_elbow(servo2_initial_position);
                 vTaskDelay(pdMS_TO_TICKS(1000));
             }
