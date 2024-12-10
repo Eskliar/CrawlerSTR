@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matriz</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(120deg, #1a1a2e, #16213e); /* Fondo degradado azul oscuro */
+            color: white;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            flex-direction: row;
+        }
+
+        .container {
+            display: flex;
+            width: 90%;
+            max-width: 90%;
+        }
+
+        .content {
+            flex: 1;
+            padding: 20px;
+            background: #1a1a2e; /* Fondo oscuro para contenido */
+        }
+
+        .sidebar-left, .sidebar-right {
+            flex: 0 0 450px;
+            padding: 20px;
+            background: #16213e; /* Fondo más oscuro para el texto explicativo */
+            color: #e0e0e0;
+            font-size: 18px;
+            margin-left: 20px;
+            border-radius: 10px;
+        }
+
+        .sidebar-right {
+            margin-left: 20px;
+        }
+
+        header {
+            background-color: #6683a7;
+            padding: 20px;
+        }
+
+        header img {
+            width: 200px; /* Ajusta el tamaño del logo */
+        }
+
+        h1 {
+            margin: 20px 0;
+            color: #ffffff;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin: 20px auto;
+            background: #e0e0e0; /* Fondo claro para contraste */
+            color: #000;
+        }
+
+        td, th {
+            border: 1px solid #000;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .buttons {
+            text-align: center;
+            margin: 20px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            margin: 10px;
+            border: none;
+            border-radius: 50px; /* Botones redondeados */
+            color: white;
+            background: #0077b6; /* Azul vibrante */
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background: #023e8a; /* Azul más oscuro al pasar el cursor */
+        }
+
+        button:active {
+            background: #005f73; /* Azul intenso al hacer clic */
+        }
+
+        p {
+            margin: 20px auto;
+            font-size: 18px;
+        }
+        #direccion-button {
+            padding: 15px 30px;
+            font-size: 18px;
+            color: white;
+            background: #ff5722; /* Naranja brillante */
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin: 10px auto; /* Centra el botón */
+            display: inline-block;
+        }
+
+        #direccion-button:hover {
+            background: #e64a19; /* Naranja más oscuro */
+        }
+
+        #direccion-button:active {
+            background: #d84315; /* Naranja intenso */
+        }
+        #direccion-texto {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar-left">
+            <br><br><br>
+            <h2>Introducción</h2>
+            <br>
+            <p style="text-align: justify;">
+                <strong>¿Qué es el Crawlerbot?</strong><br> El Crawlerbot es un robot capaz de aprender a desplazarse hacia adelante o hacia atrás en un entorno. 
+                Sus ruedas no son motorizadas, por lo que utiliza un brazo robótico para impulsarse de manera controlada.
+            </p>
+            <p style="text-align: justify;">
+                <strong>¿Cómo Aprende?</strong><br> El Crawlerbot utiliza el algoritmo <em>Q-Learning</em>, un método de aprendizaje por refuerzo, 
+                mediante el cual el robot aprende, a través de repeticiones, las acciones óptimas para alcanzar un objetivo. 
+                En este caso, el objetivo es desplazarse eficientemente utilizando su brazo robótico.
+            </p>
+            <p style="text-align: justify;">
+                <strong>¿Qué es la Matriz?</strong><br> La matriz de aprendizaje (<em>Matriz Q</em>) representa los diferentes estados y acciones posibles del robot. 
+                En este caso:
+            </p>
+            <ul style="text-align: justify;">
+                <li><strong>Estado:</strong> La posición actual del brazo robótico.</li>
+                <li><strong>Acción:</strong> El siguiente movimiento del brazo.</li>
+            </ul>
+            <p style="text-align: justify;">
+                Si una acción produce un resultado positivo (como un desplazamiento hacia adelante), 
+                se otorga una recompensa positiva. Si el movimiento es desfavorable (como un retroceso no deseado), 
+                se asigna una recompensa negativa. Estas recompensas están limitadas en magnitud a valores ≤ 1.
+            </p>
+        </div>
+        
+        <div class="content">
+            <header>
+                {% load static %}
+                <img src="{% static '/crawler.png' %}" alt="CrawlerBot Logo">
+            </header>
+
+            <main>
+                <h1>
+                    <div>
+                        <span id="direccion-texto">Adelante</span> <!-- Texto dinámico -->
+                    </div>
+                    <div>
+                        <span id="direccion-flecha">↑</span> <!-- Flecha -->
+                    </div>
+                </h1>
+                <h1>Estado: <span id="estado-crawler">{{ estado_crawler }}</span></h1>
+                <h1>Matriz Recibida</h1>
+                {% if matriz %}
+                    <table>
+                        <!-- La tabla se llenará dinámicamente -->
+                        {% for fila in matriz %}
+                            <tr>
+                                {% for valor in fila %}
+                                    <td>{{ valor }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    <p>No se ha recibido ninguna matriz aún.</p>
+                {% endif %}
+                <div class="buttons">
+                    <div>
+                        <button id="start-button" onclick="handleStart()">Start</button>
+                        <button id="stop-button" onclick="handleStop()">Stop</button>
+                    </div>
+                    <div>
+                        <button id="direccion-button" onclick="toggleDireccion()">Dirección</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Barra lateral derecha -->
+        <div class="sidebar-right">
+            <br><br><br>
+            <h2>Modo de Uso</h2>
+            <br>
+            <p style="text-align: justify;">
+                <strong>¿Cómo se usa?</strong> <br> Podemos controlar el aprendizaje y el movimiento del robot a través de los botones <em>"Start"</em>, <em>"Stop"</em> y <em>"Dirección"</em>. Aquí te explicamos cómo funciona:
+            </p>
+            <ul style="text-align: justify;">
+                <li><strong>1er. Start:</strong> Comienza el proceso de aprendizaje.</li>
+                <li><strong>1er. Stop:</strong> Detiene el proceso de aprendizaje.</li>
+                <li><strong>2do. Start:</strong> Se mueve según lo aprendido.</li>
+                <li><strong>2do. Stop:</strong> Detiene el movimiento aprendido.</li>
+            </ul>
+            <p style="text-align: justify;">
+                Una vez que el robot ha dejado de aprender, ejecutará los movimientos que obtuvieron la mayor recompensa durante el aprendizaje.<br>
+                Los movimientos se representarán en la matriz como:
+            </p>
+            <ul style="text-align: justify;">
+                <li><strong>Verde:</strong> Recompensa positiva (hacia adelante)</li>
+                <li><strong>Rojo:</strong> Recompensa negativa (hacia atras).</li>
+            </ul>
+            <p style="text-align: justify;"> 
+                Ahora, podrás ejecutar y detener el robot un máximo de 5 veces antes de reiniciar el aprendizaje. <br><br>
+                Mediante el botón <em>"Dirección"</em>, puedes controlar si quieres que el robot se mueva hacia adelante o hacia atrás. 
+            </p>
+            <p style="text-align: justify;">
+                <strong>Importante:</strong><br> Cuanto más tiempo dedique el robot al aprendizaje, más preciso y exacto será su comportamiento. 
+                ¡Asegúrate de permitirle aprender lo suficiente antes de detenerlo!
+                <br>
+            </p>
+        </div>
+    </div>
+
+    <script>
+    async function handleStart() {
+        try {
+            const response = await fetch('/start/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}', // Usamos el token CSRF de Django
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Start activated:", data);
+            } else {
+                console.error("Error al activar Start:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error de conexión:", error);
+        }
+    }
+
+    async function handleStop() {
+        try {
+            const response = await fetch('/stop/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Stop activated:", data);
+            } else {
+                console.error("Error al activar Stop:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error de conexión:", error);
+        }
+    }
+
+    async function toggleDireccion() {
+        try {
+            const responseGet = await fetch('/api/get_direccion_crawler/', { cache: "no-store" });
+            if (responseGet.ok) {
+                const data = await responseGet.json();
+                const currentDireccion = data.start2;
+                const newDireccion = currentDireccion === 0 ? 1 : 0;
+
+                const responseSet = await fetch('/api/set_direccion_crawler/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ start2: newDireccion }),
+                    cache: "no-store"
+                });
+
+                if (responseSet.ok) {
+                    actualizarFlecha(newDireccion);
+                } else {
+                    console.error("Error al alternar dirección:", responseSet.statusText);
+                }
+            } else {
+                console.error("Error al obtener dirección actual:", responseGet.statusText);
+            }
+        } catch (error) {
+            console.error("Error de conexión:", error);
+        }
+    }
+
+    function actualizarFlecha(direccion) {
+        const flecha = document.getElementById('direccion-flecha');
+        const texto = document.getElementById('direccion-texto');
+        
+        if (direccion === 0) {
+            flecha.textContent = '↑';
+            texto.textContent = 'Adelante';
+        } else {
+            flecha.textContent = '↓';
+            texto.textContent = 'Hacia Atrás';
+        }
+    }
+
+    async function inicializarFlecha() {
+        try {
+            const response = await fetch('/api/get_direccion_crawler/', { cache: "no-store" });
+            if (response.ok) {
+                const data = await response.json();
+                actualizarFlecha(data.direccionCrawler);
+            } else {
+                console.error("Error al obtener dirección inicial:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error de conexión:", error);
+        }
+    }
+
+    inicializarFlecha();
+
+    async function actualizarEstado() {
+        try {
+            const response = await fetch('/api/get_estado_crawler/');
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('estado-crawler').textContent = data.estado_crawler;
+            } else {
+                console.error("Error al obtener el estado:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error de conexión:", error);
+        }
+    }
+
+    setInterval(actualizarEstado, 1000);
+
+    async function actualizarMatriz() {
+        try {
+            const response = await fetch('/api/get_matriz/');
+            if (response.ok) {
+                const data = await response.json();
+                const matriz = data.matriz;
+
+                const tabla = document.querySelector('table');
+                if (tabla) {
+                    while (tabla.rows.length > 0) {
+                        tabla.deleteRow(0);
+                    }
+
+                    const encabezado = document.createElement('tr');
+                    const celdaVacia = document.createElement('th');
+                    celdaVacia.style.backgroundColor = "lightblue";
+                    encabezado.appendChild(celdaVacia);
+
+                    for (let i = 0; i < matriz[0].length; i++) {
+                        const th = document.createElement('th');
+                        th.textContent = 'A' + (i + 1);
+                        th.style.backgroundColor = "lightblue";
+                        encabezado.appendChild(th);
+                    }
+
+                    tabla.appendChild(encabezado);
+
+                    matriz.forEach((fila, filaIndex) => {
+                        const tr = document.createElement('tr');
+                        const th = document.createElement('th');
+                        th.textContent = 'E' + (filaIndex + 1);
+                        th.style.backgroundColor = "lightblue";
+                        tr.appendChild(th);
+
+                        fila.forEach(valor => {
+                            const td = document.createElement('td');
+                            td.textContent = valor;
+
+                            const color = calcularColor(valor);
+                            td.style.backgroundColor = color;
+
+                            tr.appendChild(td);
+                        });
+
+                        tabla.appendChild(tr);
+                    });
+                }
+            } else {
+                console.error("Error al obtener la matriz:", response.statusText);
+            }
+        } catch (error) {
+            console.error("Error de conexión:", error);
+        }
+    }
+    setInterval(actualizarMatriz, 5000);
+
+    function calcularColor(valor) {
+        if (valor > 0) {
+            const opacidad = Math.abs(valor);
+            return `rgba(0, 255, 0, ${opacidad})`;
+        } else if (valor < 0) {
+            const opacidad = Math.abs(valor);
+            return `rgba(255, 0, 0, ${opacidad})`;
+        } else {
+            return `rgba(255, 255, 255, 1)`;
+        }
+    }
+    </script>
+</body>
+</html>

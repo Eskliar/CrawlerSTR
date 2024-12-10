@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"name": "Crawler-Q-Learning",
+			"path": ".."
+		}
+	],
+	"settings": {}
+}
