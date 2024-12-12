@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+
 // Estructura para almacenar el estado del encoder
 typedef struct {
     int pin_out;               // Pin de salida con interrupción
@@ -10,6 +11,8 @@ typedef struct {
     volatile int64_t last_pulse_time;  // Marca de tiempo del último pulso
 } encoder_t;
 
+extern encoder_t encoder1;
+extern encoder_t encoder2;
 
 // Definir los pines de salida de los encoders
 #define ENCODER1_OUT 16
