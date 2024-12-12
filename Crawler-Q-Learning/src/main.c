@@ -639,6 +639,7 @@ void mover_servos_continuamente(int servo1_initial_position, int servo2_initial_
         enviarEstadoCrawler();
         if(learn==FRONT_LEARN){
             while (estadoCrawler==1) {
+                float inicio = dwalltime();
                 // Movimiento de inicial a mejor posición
                 printf("Moviendo hacia la mejor posición...\n");
                 while (servo1_initial_position != servo1_best_position) {
@@ -691,12 +692,16 @@ void mover_servos_continuamente(int servo1_initial_position, int servo2_initial_
                         vTaskDelay(pdMS_TO_TICKS(1000));
                     }
                 }
+            float fin = dwalltime();
+            float tiempo_ejecucion = fin - inicio;;
+            printf("Tiempo de ejecución de movimiento hacia adelante: %.2f segundos\n", tiempo_ejecucion);
             estadoCrawler=obtenerEstadoCrawler();
             enviarEstadoCrawler();
             }
         }
         else if(learn==BACK_LEARN){
             while (estadoCrawler==1) {
+                float inicio = dwalltime();
                 // Movimiento de inicial a mejor posición
                 printf("Moviendo hacia la mejor posición...\n");
                 while (servo2_initial_position != servo2_best_position) {
@@ -762,6 +767,11 @@ void mover_servos_continuamente(int servo1_initial_position, int servo2_initial_
                         vTaskDelay(pdMS_TO_TICKS(1000));
                     }
                 }
+
+            float fin = dwalltime();
+            float tiempo_ejecucion = fin - inicio;;
+            printf("Tiempo de ejecución de movimiento hacia atras: %.2f segundos\n", tiempo_ejecucion);
+
             estadoCrawler=obtenerEstadoCrawler();
             enviarEstadoCrawler();
             }
@@ -932,6 +942,7 @@ void app_main(void){
         float fin = dwalltime();
         float tiempo_aprendizaje = fin - inicio;;
         printf("Tiempo de ejecución de un episodio: %.2f segundos\n", tiempo_aprendizaje);
+        printf("Numero de movimientos realizados: %d\n", cont);
         //-------------------------------
 
         if(learn==FRONT_LEARN){
