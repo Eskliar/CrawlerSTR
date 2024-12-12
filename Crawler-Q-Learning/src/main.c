@@ -208,6 +208,13 @@ int http_get(const char *url)
     return estado;
 }
 
+/*******funcion para tiempo************ */
+double dwalltime() {
+    struct timespec time;
+    clock_gettime(CLOCK_REALTIME, &time);
+    return (double)time.tv_sec + (double)time.tv_nsec / 1.0e9;
+}
+
 /***********************************************************/
 
 //Envia datos de la matriz al servidor
@@ -840,8 +847,8 @@ void app_main(void){
         int next_state = 0;
         int action = 0;
         int cont = 0;//contador para las iteraciones
-        int max_iterations = 100;// Número de iteraciones para el aprendizaje
-        float inicio;
+        // int max_iterations = 100;// Número de iteraciones para el aprendizaje
+        float inicio;//para el calculo del tiempo
 
         estadoAprendiendoEjecutando=-1;
         enviarEstadoCrawler();
