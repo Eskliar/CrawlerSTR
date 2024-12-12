@@ -841,7 +841,7 @@ void app_main(void){
         int action = 0;
         int cont = 0;//contador para las iteraciones
         int max_iterations = 100;// Número de iteraciones para el aprendizaje
-        // float inicio = dwalltime();
+        float inicio;
 
         estadoAprendiendoEjecutando=-1;
         enviarEstadoCrawler();
@@ -856,6 +856,7 @@ void app_main(void){
 
         estadoAprendiendoEjecutando=0;
         enviarEstadoCrawler();
+        inicio = dwalltime();
         while ((estadoCrawler==1)) {
 
             if (xSemaphoreTake(xMutex, portMAX_DELAY)) {
@@ -916,19 +917,16 @@ void app_main(void){
         learn=obtenerDireccionCrawler();
         crawler_listo = true;  // Señalamos que el aprendizaje ha terminado
         enviarDatosMatriz(agent.Q);
-        // enviarDatosMatriz(agent.Q);
         printf("Proceso de aprendizaje completado.\n");
-        estadoAprendiendoEjecutando=-1;
+        estadoAprendiendoEjecutando=-1;//estado ejecutando aprendido
         enviarEstadoCrawler();
 
-    //---calculo del tiempo-----------
-    // float fin = dwalltime();
-    // float tiempo_total = fin - inicio;
-    // float tiempo_de_delay = 2 * cont; // Cada delay es de 2 segundos
-    // float tiempo_ejecucion_real = tiempo_total - tiempo_de_delay;
-    // printf("Tiempo total del bucle: %.2f segundos\n", tiempo_total);
-    // printf("Tiempo de ejecución sin delay: %.2f segundos\n", tiempo_ejecucion_real);
-    //-------------------------------
+        //---calculo del tiempo-----------
+        float fin = dwalltime();
+        float tiempo_aprendizaje = fin - inicio;;
+        printf("Tiempo de ejecución de un episodio: %.2f segundos\n", tiempo_aprendizaje);
+        //-------------------------------
+
         if(learn==FRONT_LEARN){
             mover_servos_continuamente(45,0);//Ccomienza a moverse segun lo aprendido, a partir de un estado inicial (posiciones de servos)
         }
