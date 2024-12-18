@@ -1,5 +1,5 @@
 <!-- Titulo del proyecto -->
-# Proyecto A4 - CrawlerBot
+# Proyecto A5 - CrawlerBot
 
 <!-- Logo -->
 <div>
@@ -159,9 +159,11 @@ Este proyecto tuvo como objetivo el desarrollo de uno de estos, utilizando un **
 
 * **Ezequiel Benito Skliar** [![Repo](https://badgen.net/badge/icon/Eskliar?icon=github&label)](https://github.com/Eskliar)
 
-* **Sebastián Sauer Rosas** [![Repo](https://badgen.net/badge/icon/sauersebastian?icon=github&label)](https://github.com/sauersebastian)
+* **Juan Martín Castro** [![Repo](https://badgen.net/badge/icon/sauersebastian?icon=github&label)](https://github.com/sauersebastian)
+
+* * **Nicolás Guerrero** [![Repo](https://badgen.net/badge/icon/sauersebastian?icon=github&label)](https://github.com/sauersebastian)
   
-*  **Luciano Nicolás Loyola** [![Repo](https://badgen.net/badge/icon/LucianoLoyola?icon=github&label)](https://github.com/LucianoLoyola)
+*  **Ignacio Niculás Flores** [![Repo](https://badgen.net/badge/icon/LucianoLoyola?icon=github&label)](https://github.com/LucianoLoyola)
 
 
 <h1 id="coordinador">📌 Coordinador</h1>
